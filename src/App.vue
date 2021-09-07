@@ -6,12 +6,20 @@
     <span class="site-description">{{ currentDate }}</span>
 
     <!--entry list-->
-    <ul clss="entry-list">
-      <li class="entry-item">
-        <span class="entry-daytime">18.08.2021</span>
+    <ul class="entry-list">
+      <li v-for="entry in filteredEntries" :key="entry.id" class="entry-item">
+        <span class="entry-daytime"
+          >{{ entry[0] }} Uhr - {{ entry[1].replaceAll("/", ". ") }}</span
+        >
+        <h3 class="entry-title">{{ entry[2] }}</h3>
+        <span class="entry-description">{{ entry[3] }}</span>
+      </li>
+
+      <!-- <li class="entry-item">
+        <span clawhitess="entry-daytime">18.08.2021</span>
         <h3 class="entry-title">Besuch</h3>
         <span class="entry-description">Interessenten besuchen uns</span>
-      </li>
+      </li> -->
     </ul>
 
     <!--footer-->
@@ -27,24 +35,41 @@
 </template>
 
 <script>
+import axios from "axios"; //import the object axios from the library of axios
+
 export default {
   name: "App",
   data() {
     return {
       title: "Welcome to Opportunity",
       currentDate: "",
+      gsheet_url:
+        "https://sheets.googleapis.com/v4/spreadsheets/15_C4Rx7692L5WNy4y4DEksZKDM0HRjrcUuXVTMtElwI/values:batchGet?ranges=A1%3AE100&valueRenderOption=FORMATTED_VALUE&key=AIzaSyBesotaNgSaTUIhrSKjEaExdi-ksKInhoE",
+      entries: [],
     };
   },
+  computed: {
+    //computed properties are like data properties, but with a method combined, it gets executed automatically, instead of calling a function explicitely
+    filteredEntries() {
+      return [...this.entries].slice(1); //... means something, 'slice' removes first item of array
+    },
+  },
   methods: {
+    getData() {
+      axios.get(this.gsheet_url).then((response) => {
+        this.entries = response.data.valueRanges[0].values;
+        console.log(response);
+      });
+    },
     updateCurrentDate() {
       let today = new Date();
       const date = `${today.getDate()}.${today.getMonth() +
         1}.${today.getFullYear()}`;
       this.currentDate = date;
-      console.log(this.currentDate);
     },
     refreshData() {
       this.updateCurrentDate();
+      this.getData();
     },
   },
   mounted() {
@@ -124,6 +149,7 @@ body {
   display: flex;
   justify-content: space-between;
   box-sizing: border-box;
+  margin-top: 200px;
   padding: 40px;
   background: #fff;
   position: fixed;
